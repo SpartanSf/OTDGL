@@ -1,6 +1,6 @@
 # OTDGL
 
-OTDGL is a fast, lightweight graphics renderer for ComputerCraft: Tweaked, with special focus on CraftOS-PC.
+OTDGL (Open Three D Graphics Library) is a fast, lightweight graphics renderer for ComputerCraft: Tweaked, with special focus on CraftOS-PC.
 
 Feature support:
 
