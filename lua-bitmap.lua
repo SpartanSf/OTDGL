@@ -24,8 +24,9 @@ local bmp_header_image_size = 34
 --local bmp_header_bitmask_a = 72
 
 local function get_data_size(width, height, bpp)
-	local line_w = math.ceil(width/4)*4
-	return height*line_w*(bpp/8)
+	local row_len = width * (bpp/8) -- bytes per row of pixels
+	local row_stride = math.ceil(row_len/4)*4 -- padded to 4-byte boundary
+	return height * row_stride
 end
 
 local function new_bitmap()
@@ -186,7 +187,6 @@ local function new_bitmap()
 		local g = self:read(index+1)
 		local r = self:read(index+2)
 
-
 		local a = nil
 		if Bpp == 4 then -- on 32bpp, also get 4th channel value(alpha, not in spec)
 			a = self:read(index+3)
@@ -209,7 +209,7 @@ local function new_bitmap()
 
 		-- calculate byte offset in data
 		local Bpp = self.bpp/8
-		local row_len = width * Bpp -- length of pixel data in bytes
+		local row_len = self.width * Bpp -- length of pixel data in bytes
 		local row_stride = math.ceil(row_len/4)*4 -- padded length of a row in bytes
 		local index = self.pixel_offset + y*row_stride + x*Bpp
 		if self.topdown then
@@ -294,7 +294,6 @@ local function new_bitmap_from_file(path)
 
 	return new_bitmap_from_string(data)
 end
-
 
 -- this is the module returned to the user when require()'d
 local Bitmap = {
