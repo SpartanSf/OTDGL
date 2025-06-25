@@ -87,7 +87,7 @@ for y=1,H do
     fb[y] = {}
     zb[y] = {}
     for x=1,W do
-        zb[y][x] = huge
+        zb[y][x] = huge_neg
     end
 end
 
@@ -96,7 +96,7 @@ local function clearBuffers()
         local fb_row, zb_row = fb[y], zb[y]
         for x=1,W do
             fb_row[x] = clearColor
-            zb_row[x] = huge
+            zb_row[x] = huge_neg
         end
     end
 end
@@ -144,7 +144,7 @@ local function fillSolidTri(p0x, p0y, p0z, p1x, p1y, p1z, p2x, p2y, p2z, col)
 
             if w0 >= 0 and w1 >= 0 and w2 >= 0 then
                 local z = (p0z*w0 + p1z*w1 + p2z*w2) * inv_area
-                if z < zb_row[x] then
+                if z >= zb_row[x] + 1e-6 then
                     zb_row[x] = z
                     fb_row[x] = col
                 end
@@ -242,7 +242,7 @@ local function fillTexturedTri(p0x, p0y, p0z, p1x, p1y, p1z, p2x, p2y, p2z,
 
             local z_val = inv_w
 
-            if z_val < zb_row[x] then
+            if z_val >= zb_row[x] + 1e-6 then
                 zb_row[x] = z_val
                 fb_row[x] = rgb2col(r, g, b)
             end
@@ -259,7 +259,6 @@ local oh3d = {}
 local vertex_pool, proj_pool = {}, {}
 
 function oh3d.newModel(data)
-
     vertex_pool[data] = {}
     proj_pool[data] = {}
     return data
@@ -312,15 +311,15 @@ function oh3d.render(model, transform, opts)
             local bx, by, bz = vec_sub(v3, v1)
             local nx, ny, nz = vec_cross(ax, ay, az, bx, by, bz)
 
-            local faceX = (v1[1] + v2[1] + v3[1]) / 3
-            local faceY = (v1[2] + v2[2] + v3[2]) / 3
-            local faceZ = (v1[3] + v2[3] + v3[3]) / 3
+            local faceX = (v1[1] + v2[1] + v3[1]) * (1/3)
+            local faceY = (v1[2] + v2[2] + v3[2]) * (1/3)
+            local faceZ = (v1[3] + v2[3] + v3[3]) * (1/3)
 
-            local viewDirX = v1[1]  
-            local viewDirY = v1[2]
-            local viewDirZ = v1[3]
+            local viewDirX = -faceX
+            local viewDirY = -faceY
+            local viewDirZ = -faceZ
 
-            if nx*viewDirX + ny*viewDirY + nz*viewDirZ < 0 then
+            if nx*viewDirX + ny*viewDirY + nz*viewDirZ > 0 then
                 local p1, p2, p3 = projected[face[1]], projected[face[2]], projected[face[3]]
 
                 if mat.type == "color" then
@@ -438,6 +437,14 @@ function ogl.Perspective(fov, aspect, near, far)
         f/aspect, 0, 0,
         0, f, 0,
         0, 0, (far+near)/(near-far)
+    }
+end
+
+function ogl.GetCurrentTransform()
+    local top = MVstack[#MVstack]
+    return {
+        rot = top[1],
+        trans = top[2]
     }
 end
 

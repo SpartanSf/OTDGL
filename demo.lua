@@ -6,46 +6,27 @@ gl.ClearColor(0, 0, 0, 1)
 local Bitmap = require("lua-bitmap")
 
 local cube = gl.newModel({
-    vertices = { { -1, -1, -1 }, { 1, -1, -1 }, { 1, 1, -1 }, { -1, 1, -1 }, { -1, -1, 1 }, { 1, -1, 1 }, { 1, 1, 1 }, {
-        -1,
-        1,
-        1,
-    } },
+    vertices = { 
+        { -1, -1, -1 }, { 1, -1, -1 }, { 1, 1, -1 }, { -1, 1, -1 },
+        { -1, -1, 1 }, { 1, -1, 1 }, { 1, 1, 1 }, { -1, 1, 1 }
+    },
     parts = {
-        { name = "back", faces = { { 1, 2, 3 }, { 1, 3, 4 } }, uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, {
-            { 0, 1 },
-            { 1, 0 },
-            { 0, 0 },
-        } }, material = "mat0" },
-        { name = "front", faces = { { 6, 5, 8 }, { 6, 8, 7 } }, uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, {
-            { 0, 1 },
-            { 1, 0 },
-            { 0, 0 },
-        } }, material = "mat1" },
-        { name = "left", faces = { { 5, 1, 4 }, { 5, 4, 8 } }, uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, {
-            { 0, 1 },
-            { 1, 0 },
-            { 0, 0 },
-        } }, material = "mat2" },
-        { name = "right", faces = { { 2, 6, 7 }, { 2, 7, 3 } }, uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, {
-            { 0, 1 },
-            { 1, 0 },
-            { 0, 0 },
-        } }, material = "mat3" },
-        { name = "top", faces = { { 4, 3, 7 }, { 4, 7, 8 } }, uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, {
-            { 0, 1 },
-            { 1, 0 },
-            { 0, 0 },
-        } }, material = "mat4" },
-        { name = "bottom", faces = { { 5, 6, 2 }, { 5, 2, 1 } }, uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, {
-            { 0, 1 },
-            { 1, 0 },
-            { 0, 0 },
-        } }, material = "mat5" },
+        { name = "back", faces = { { 1, 4, 3 }, { 1, 3, 2 } }, 
+          uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, { { 0, 1 }, { 1, 0 }, { 0, 0 } } }, material = "mat0" },
+        { name = "front", faces = { { 5, 6, 7 }, { 5, 7, 8 } }, 
+          uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, { { 0, 1 }, { 1, 0 }, { 0, 0 } } }, material = "mat1" },
+        { name = "left", faces = { { 5, 8, 4 }, { 5, 4, 1 } }, 
+          uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, { { 0, 1 }, { 1, 0 }, { 0, 0 } } }, material = "mat2" },
+        { name = "right", faces = { { 2, 3, 7 }, { 2, 7, 6 } }, 
+          uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, { { 0, 1 }, { 1, 0 }, { 0, 0 } } }, material = "mat3" },
+        { name = "top", faces = { { 4, 8, 3 }, { 3, 8, 7 } }, 
+          uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, { { 0, 1 }, { 1, 0 }, { 0, 0 } } }, material = "mat4" },
+        { name = "bottom", faces = { { 1, 2, 6 }, { 1, 6, 5 } }, 
+          uvs = { { { 0, 1 }, { 1, 1 }, { 1, 0 } }, { { 0, 1 }, { 1, 0 }, { 0, 0 } } }, material = "mat5" },
     },
     materials = {
         mat0 = { type = "color", value = colors.red },
-        mat1 = { type = "texture", texture = Bitmap.from_file("otdgl/texture3.bmp") },
+        mat1 = { type = "texture", texture = Bitmap.from_file("otdgl/doom2.bmp") },
         mat2 = { type = "color", value = colors.lime },
         mat3 = { type = "color", value = colors.blue },
         mat4 = { type = "color", value = colors.yellow },
@@ -68,49 +49,33 @@ local function draw()
     gl.Rotatef(t * 50, 0, 1, 0)
     gl.Rotatef(t * 25, 1, 0, 0)
 
-    -- Create transform function using current matrix state
+    local transform_state = gl.GetCurrentTransform()
+    local rot = transform_state.rot
+    local trans = transform_state.trans
+    
     local function transform(v)
         local x, y, z = v[1], v[2], v[3]
-        local mat = gl.GetCurrentMatrix()
-        local tx = gl.GetCurrentTranslation()
-        
-        -- Apply rotation
-        local rx = mat[1]*x + mat[2]*y + mat[3]*z
-        local ry = mat[4]*x + mat[5]*y + mat[6]*z
-        local rz = mat[7]*x + mat[8]*y + mat[9]*z
-        
-        -- Apply translation
-        return {rx + tx[1], ry + tx[2], rz + tx[3]}
+        local rx = rot[1]*x + rot[2]*y + rot[3]*z + trans[1]
+        local ry = rot[4]*x + rot[5]*y + rot[6]*z + trans[2]
+        local rz = rot[7]*x + rot[8]*y + rot[9]*z + trans[3]
+        return {rx, ry, rz}
     end
     
-    -- Render the cube with the current transform
     gl.render(cube, transform)
     
-	local cTime = os.epoch("utc") / 1000
-
-	if cTime >= tGoal then
-		t = t + 1/60
-		tGoal = tGoal + 1/60
-	end
+    local cTime = os.epoch("utc") / 1000
+    if cTime >= tGoal then
+        t = t + 1/60
+        tGoal = tGoal + 1/60
+    end
 end
 
--- Main loop implementation
-local function MainLoop(drawFunc)
+function gl.MainLoop(drawFunc)
     while true do
         drawFunc()
         os.queueEvent("fake_event")
         os.pullEvent()
     end
-end
-
-gl.MainLoop = MainLoop
-gl.GetCurrentMatrix = function()
-	local stack = gl.getMVstack()
-    return stack[#stack][1]
-end
-gl.GetCurrentTranslation = function()
-	local stack = gl.getMVstack()
-    return stack[#stack][2]
 end
 
 gl.MainLoop(draw)
