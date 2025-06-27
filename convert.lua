@@ -1,3 +1,5 @@
+local util = require("otdgl_util")
+
 function convertToOh3dModel(triangles)
     local vertices = {}
     local vertexMap = {}
@@ -73,5 +75,5 @@ dataInFile.close()
 local dataOh3dModel = convertToOh3dModel(textutils.unserialise(dataIn))
 
 local dataOutFile = fs.open(args[2], "w")
-dataOutFile.write(textutils.serialise(dataOh3dModel, {compact = true}))
+dataOutFile.write(textutils.serialise(util.encodeModel(dataOh3dModel), {compact = true}))
 dataOutFile.close()

@@ -288,9 +288,12 @@ local function new_bitmap_from_file(path)
 
 	-- try to read from the file
 	local data = file:read("*a")
-	if (not data) or (data == "") then
+	if not data or data == "" then
+		file:close()
 		return nil, "can't read input file: "..tostring(path)
 	end
+
+	file:close()
 
 	return new_bitmap_from_string(data)
 end
